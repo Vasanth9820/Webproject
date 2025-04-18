@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OTP Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    *{
+    margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  color: white;
+}
+.bg{
+    display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background:#000012;
+}
+.box{
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 40px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  width: 410px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  animation: fadeIn 0.5s ease-in-out;
+}
+button {
+  background: #ff8200;
+  color: white;
+  border-radius: 50px;
+  padding: 12px;
+  border: none;
+  width: 360px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+    input[type="text"] {
+      width: 3rem;
+      height: 3rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body class="bg">
+  <div class="box">
+    <img src="https://img.icons8.com/?size=100&id=h4M5xzzhJIlG&format=png&color=FFFFFF" width="50" height="30"class="mx-auto mb-1" />
+    <h2 class="text-2xl font-bold mb-2">OTP Verification</h2>
+    <p class="mb-4 text-gray-700">
+      One Time Password (OTP) has been sent via email.<br>
+      Enter the OTP below to verify it.
+    </p>
+    <div class="flex text-black justify-center gap-2 mb-4">
+      <input type="text" maxlength="1" class="border rounded" id="otp1" oninput="moveNext(this, 'otp2')" />
+      <input type="text" maxlength="1" class="border rounded" id="otp2" oninput="moveNext(this, 'otp3')" />
+      <input type="text" maxlength="1" class="border rounded" id="otp3" oninput="moveNext(this, 'otp4')" />
+      <input type="text" maxlength="1" class="border rounded" id="otp4" oninput="moveNext(this, 'otp5')" />
+      <input type="text" maxlength="1" class="border rounded" id="otp5" oninput="moveNext(this, 'otp6')" />
+      <input type="text" maxlength="1" class="border rounded" id="otp6" />
+    </div>
+
+    <button onclick="submitOTP()" class="bg-orange-600 text-white py-2 px-4 w-full">Verify OTP</button>
+
+    <p class="text-sm text-gray-600 mt-4">
+      Resend OTP in <span id="timer">00:30</span>
+    </p>
+
+    <p id="message" class="text-sm mt-2 text-red-500"></p>
+  </div>
+
+  <script>
+    // Move to next box automatically
+    function moveNext(current, nextID) {
+      if (current.value.length === 1 && nextID) {
+        document.getElementById(nextID).focus();
+      }
+    }
+
+    function submitOTP() {
+      const email = localStorage.getItem("otp_email");
+      const otp = [...Array(6)].map((_, i) => document.getElementById("otp" + (i + 1)).value).join("");
+
+      fetch("/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = "/welcome.html";
+        } else {
+          document.getElementById("message").textContent = "Invalid OTP!";
+        }
+      });
+    }
+
+    // Countdown timer
+    let seconds = 30;
+    const timerEl = document.getElementById("timer");
+    const countdown = setInterval(() => {
+      seconds--;
+      timerEl.textContent = `00:${seconds < 10 ? "0" + seconds : seconds}`;
+      if (seconds <= 0) {
+        clearInterval(countdown);
+        timerEl.textContent = "Resend available now";
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
